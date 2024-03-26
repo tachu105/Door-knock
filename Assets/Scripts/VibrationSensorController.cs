@@ -25,24 +25,30 @@ public class VibrationSensorController : MonoBehaviour
     {
         bool currentState;
 
+
         // システムのフェーズがWaitKnockでない場合は再起
-        if(systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock) yield break;
-
-
-        // 振動センサの値の変化を監視
-        while(!systemModel.CheckVibrationSensorChange(out currentState))
+        if (systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock)
         {
             yield return null;
+            StartCoroutine(CountKnock());
+            yield break;
         }
 
+        // 振動センサの値の変化を監視
+        while(true)
+        {
+            
+            if (systemModel.CheckVibrationSensorChange(out currentState)) break;
+            yield return null;
+        }
 
         if(currentState)
         {
             systemModel.knockCount++;
-
+            Debug.Log(systemModel.knockCount);
             // 一定時間経過後にノックカウントをリセットする機能を更新
-            if(resetCountTimer != null) StopCoroutine(resetCountTimer);
-            StartCoroutine(ResetKnockCountTimer(systemModel.knockResetTime));
+            if (resetCountTimer != null) StopCoroutine(resetCountTimer);
+            resetCountTimer = StartCoroutine(ResetKnockCountTimer(systemModel.knockResetTime));
 
             // 指定回数ノックされた場合は次のフェーズに移行
             if(systemModel.knockCount >= systemModel.knockThreshold)
@@ -51,6 +57,9 @@ public class VibrationSensorController : MonoBehaviour
                 systemModel.knockCount = 0;
             }
         }
+
+        yield return null;
+        StartCoroutine(CountKnock());
     }
 
 

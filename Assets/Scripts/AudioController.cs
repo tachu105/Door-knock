@@ -19,6 +19,10 @@ public class AudioController : MonoBehaviour
         audioDataBase = GetComponent<AudioDataBase>();
         audioSource = GetComponent<AudioSource>();
 
+        audioDataBase.LoadAudioFiles();
+
+        systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
+
         StartCoroutine(PlayAudio());
     }
 
@@ -47,12 +51,18 @@ public class AudioController : MonoBehaviour
                 yield return StartCoroutine(PlayAnotherAnswerAudio());  //音声の再生が終わるまで待機
                 systemModel.ChangeNextSystemPhase();  //次のフェーズに変更
                 break;
+            case SystemModel.SystemPhase.SystemReset:
+                yield return StartCoroutine(PlaySystemResetAudio());  //音声の再生が終わるまで待機
+                systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
+                break;
             default:
+                yield return null;
                 // それ以外のフェーズの場合は再起
                 StartCoroutine(PlayAudio());
                 yield break;
         }
 
+        yield return null;
         // 監視を再開
         StartCoroutine(PlayAudio());
     }
@@ -70,6 +80,8 @@ public class AudioController : MonoBehaviour
         audioSource.clip = audioDataBase.GetQuestionAudioData(systemModel.questionID);
         audioSource.Play();
 
+        Debug.Log("質問音声再生");
+
         // 音声の再生終了まで待機
         yield return new WaitUntil(() => !audioSource.isPlaying);
     }
@@ -84,7 +96,29 @@ public class AudioController : MonoBehaviour
         audioSource.clip = audioDataBase.GetRandomAnswerAudioData(systemModel.questionID);
         audioSource.Play();
 
+        Debug.Log("他者回答再生");
+
         // 音声の再生終了まで待機
         yield return new WaitUntil(() => !audioSource.isPlaying);
     }
+
+
+    /// <summary>
+    /// 時間切れなどでシステムをリセットする際の音声を再生する
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator PlaySystemResetAudio()
+    {
+        // システムリセットの音声を再生する
+        audioSource.clip = audioDataBase.systemResetAudio;
+        audioSource.Play();
+
+        Debug.Log("システムリセット音声再生");
+
+        // 音声の再生終了まで待機
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+    }
+
+
+    
 }

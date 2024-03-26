@@ -13,10 +13,13 @@ public class SystemModel : MonoBehaviour
     /// </summary>
     public enum SystemPhase
     {
+        FileLoading,
         WaitKnock,
         PlayQuestion,
+        WaitTouch,
         AnswerRecord,
-        PlayAnotherAnswer
+        PlayAnotherAnswer,
+        SystemReset
     }
 
 
@@ -70,7 +73,17 @@ public class SystemModel : MonoBehaviour
     [SerializeField, Tooltip("指定時間以内に連続でノックされない場合はリセット")]
     public float knockResetTime = 1.0f;
 
+    [SerializeField, Tooltip("指定時間以内にドアノブがタッチされない場合はリセット")]
+    public float touchResetTime = 10.0f;
 
+    [SerializeField, Tooltip("録音時間")]
+    public float recordingTime = 10.0f;
+
+
+    private void Awake()
+    {
+        currentPhase = SystemPhase.FileLoading;
+    }
 
     /// <summary>
     /// 振動センサの値を代入
@@ -100,6 +113,7 @@ public class SystemModel : MonoBehaviour
         if (currentPhase != prePhase)
         {
             prePhase = currentPhase;
+            Debug.Log($"フェーズ{currentPhase}へ移行");
             return true;
         }
         return false;
@@ -116,8 +130,11 @@ public class SystemModel : MonoBehaviour
         {
             preVibrationSensorState = vibrationSensorCurrentState;
             currentState = vibrationSensorCurrentState;
+            Debug.Log("振動センサー値変動");
             return true;
         }
+        
+        preVibrationSensorState = vibrationSensorCurrentState;
         currentState = vibrationSensorCurrentState;
         return false;
     }
@@ -133,8 +150,10 @@ public class SystemModel : MonoBehaviour
         {
             preTouchSensorState = touchSensorCurrentState;
             currentState = touchSensorCurrentState;
+            Debug.Log("タッチセンサー値変動");
             return true;
         }
+        preTouchSensorState = touchSensorCurrentState;
         currentState = touchSensorCurrentState;
         return false;
     }
@@ -151,13 +170,16 @@ public class SystemModel : MonoBehaviour
                 currentPhase = SystemPhase.PlayQuestion;
                 break;
             case SystemPhase.PlayQuestion:
+                currentPhase = SystemPhase.WaitTouch;
+                break;
+            case SystemPhase.WaitTouch:
                 currentPhase = SystemPhase.AnswerRecord;
                 break;
             case SystemPhase.AnswerRecord:
                 currentPhase = SystemPhase.PlayAnotherAnswer;
                 break;
             case SystemPhase.PlayAnotherAnswer:
-                currentPhase = SystemPhase.PlayQuestion;
+                currentPhase = SystemPhase.WaitKnock;
                 break;
         }
     }

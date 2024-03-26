@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311918, g: 0.3807398, b: 0.35872716, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -226,6 +226,9 @@ GameObject:
   - component: {fileID: 1223303726}
   - component: {fileID: 1223303725}
   - component: {fileID: 1223303724}
+  - component: {fileID: 1223303727}
+  - component: {fileID: 1223303728}
+  - component: {fileID: 1223303729}
   - component: {fileID: 1223303723}
   m_Layer: 0
   m_Name: AudioSystem
@@ -356,10 +359,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioDatas:
-  - questionSummary: 
+  - questionSummary: "\u30C6\u30B9\u30C8\u8CEA\u554F"
+    folderName: Tests
     questionAudio: {fileID: 0}
     answerAudios: []
+    allAnswerFileCount: 0
   maxHoldNumOfAudioDatas: 10
+  systemResetAudio: {fileID: 0}
 --- !u!4 &1223303726
 Transform:
   m_ObjectHideFlags: 0
@@ -375,6 +381,47 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1223303727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223303722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44f20a68b666e0049978652f131517db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  systemModel: {fileID: 1456763742}
+  audioDataBase: {fileID: 1223303725}
+  recordingSystem: {fileID: 1223303728}
+--- !u!114 &1223303728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223303722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf14796e4defd8948bc3dc461891f5a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  micName: 
+  micNum: 0
+--- !u!114 &1223303729
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223303722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 010303ae9c5ed2049b3048ead3c30c51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1456763740
 GameObject:
   m_ObjectHideFlags: 0
@@ -384,6 +431,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1456763743}
+  - component: {fileID: 1456763744}
   - component: {fileID: 1456763742}
   - component: {fileID: 1456763741}
   m_Layer: 0
@@ -422,6 +470,8 @@ MonoBehaviour:
   knockCount: 0
   knockThreshold: 3
   knockResetTime: 1
+  touchResetTime: 10
+  recordingTime: 10
 --- !u!4 &1456763743
 Transform:
   m_ObjectHideFlags: 0
@@ -437,6 +487,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1456763744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1456763740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1914bedc43dfa5e4492863dc98a04594, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  comPortNum: 3
+  bandRate: 9600
+  systemModel: {fileID: 1456763742}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

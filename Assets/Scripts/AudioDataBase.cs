@@ -16,11 +16,17 @@ public class AudioDataBase : MonoBehaviour
         [Tooltip("質問の要約")]
         public string questionSummary;
 
+        [Tooltip("音声データのフォルダ名")]
+        public string folderName;
+
         [Tooltip("質問の音声")]
         public AudioClip questionAudio;
 
         [Tooltip("回答の音声")]
         public List<AudioClip> answerAudios;
+
+        [HideInInspector]
+        public int allAnswerFileCount;    //回答ファイルの総数
     }
 
     [SerializeField, Tooltip("質問回答音声のデータベース")]
@@ -29,6 +35,10 @@ public class AudioDataBase : MonoBehaviour
     [SerializeField, Tooltip("回答データを保持する個数")]
     private int maxHoldNumOfAudioDatas = 10;
 
+    [SerializeField, Tooltip("システムをリセットするときに流れる音声")]
+    public AudioClip systemResetAudio;
+
+    AudioLoader audioLoader;
 
     /// <summary>
     /// 過去の回答音声データをランダムで取得する
@@ -45,7 +55,7 @@ public class AudioDataBase : MonoBehaviour
         }
 
         //ランダムで回答音声データを返す
-        int randomIndex = UnityEngine.Random.Range(0, audioDatas[questionID].answerAudios.Count);
+        int randomIndex = UnityEngine.Random.Range(0, audioDatas[questionID].answerAudios.Count-1);
         return audioDatas[questionID].answerAudios[randomIndex];
     }
 
@@ -101,5 +111,29 @@ public class AudioDataBase : MonoBehaviour
         {
             audioDatas[questionID].answerAudios.RemoveAt(0);
         }
+    }
+
+    /// <summary>
+    /// ローカルフォルダからオーディオデータを取得してDataBaseのリストに挿入する関数
+    /// </summary>
+    public void LoadAudioFiles()
+    {
+        Debug.Log("ファイルロード中");
+        audioLoader = GetComponent<AudioLoader>();
+        foreach (AudioData audioData in audioDatas)
+        {
+            audioLoader.LoadAudioClips(audioData.folderName, maxHoldNumOfAudioDatas,ref audioData.answerAudios, out audioData.allAnswerFileCount);
+        } 
+        Debug.Log("ファイルロード完了");
+    }
+
+    /// <summary>
+    /// 指定の質問番号のオーディオデータベースを取得する関数
+    /// </summary>
+    /// <param name="questionID"></param>
+    /// <returns></returns>
+    public AudioData GetAudioData(int questionID)
+    {
+        return audioDatas[questionID];
     }
 }

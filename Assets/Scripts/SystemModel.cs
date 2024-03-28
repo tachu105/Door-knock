@@ -76,6 +76,9 @@ public class SystemModel : MonoBehaviour
     [SerializeField, Tooltip("指定時間以内にドアノブがタッチされない場合はリセット")]
     public float touchResetTime = 10.0f;
 
+    [SerializeField, Tooltip("ノックを促す音声の再生間隔（分）")]
+    public int promptKnockIntervalMinutes = 15;
+
     //録音時間　なぜかSerializeから変更できない
     //なるべく変えない
     //変えたら今までの録音データを削除する

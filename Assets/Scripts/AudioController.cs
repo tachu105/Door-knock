@@ -24,6 +24,7 @@ public class AudioController : MonoBehaviour
         systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
 
         StartCoroutine(PlayAudio());
+        StartCoroutine(PlayPromptKnockAudio());
     }
 
     /// <summary>
@@ -137,5 +138,28 @@ public class AudioController : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// 一定時間置きに，ノックを促す音声を再生する
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator PlayPromptKnockAudio()
+    {
+        yield return new WaitForSeconds(systemModel.promptKnockIntervalMinutes * 60);
+
+        if(systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock)
+        {
+            yield return null;
+            StartCoroutine(PlayPromptKnockAudio());
+            yield break;
+        }
+
+        audioSource.clip = audioDataBase.promptKnockAudio;
+        audioSource.Play();
+
+        Debug.Log("ノック促し音声再生");
+
+        yield return null;
+        StartCoroutine(PlayPromptKnockAudio());
+    }
     
 }

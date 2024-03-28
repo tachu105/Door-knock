@@ -38,6 +38,9 @@ public class AudioDataBase : MonoBehaviour
     [SerializeField, Tooltip("システムをリセットするときに流れる音声")]
     public AudioClip systemResetAudio;
 
+    [SerializeField, Tooltip("ノックを促す音声")]
+    public AudioClip promptKnockAudio;
+
     AudioLoader audioLoader;
 
     /// <summary>

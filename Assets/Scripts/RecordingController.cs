@@ -68,7 +68,7 @@ public class RecordingController : MonoBehaviour
             yield return null;
         }
 
-        recordingSystem.StartRecording();   //録音開始
+        recordingSystem.StartRecording(systemModel.recordingTime);   //録音開始
         
         //録音フェーズに変更
         systemModel.currentPhase = SystemModel.SystemPhase.AnswerRecord;

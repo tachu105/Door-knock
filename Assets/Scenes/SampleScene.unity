@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311918, g: 0.3807398, b: 0.35872716, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -359,9 +359,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioDatas:
-  - questionSummary: "\u30C6\u30B9\u30C8\u8CEA\u554F"
-    folderName: Tests
-    questionAudio: {fileID: 0}
+  - questionSummary: Animal
+    folderName: Animal
+    questionAudio: {fileID: 8300000, guid: 1b81e4ba38dd2b24a98b952b96e8d0e0, type: 3}
     answerAudios: []
     allAnswerFileCount: 0
   maxHoldNumOfAudioDatas: 10
@@ -410,6 +410,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   micName: 
   micNum: 0
+  disableRecordingTime: 1
 --- !u!114 &1223303729
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -502,6 +503,7 @@ MonoBehaviour:
   comPortNum: 3
   bandRate: 9600
   systemModel: {fileID: 1456763742}
+  isDebugSerial: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

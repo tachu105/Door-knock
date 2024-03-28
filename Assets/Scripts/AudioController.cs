@@ -33,13 +33,14 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayAudio()
     {
         // システムのフェーズ変更を監視
-        while(!systemModel.CheckPhaseChange())
+        while (true)
         {
+            if (systemModel.CheckPhaseChange()) break;
             yield return null;
         }
 
         // システムのフェーズによって再生する音声を変更する
-        switch(systemModel.currentPhase)
+        switch (systemModel.currentPhase)
         {
             case SystemModel.SystemPhase.PlayQuestion:
                 // 質問の音声を再生する
@@ -81,6 +82,7 @@ public class AudioController : MonoBehaviour
         audioSource.Play();
 
         Debug.Log("質問音声再生");
+        Debug.Log(audioSource.clip.length);
 
         // 音声の再生終了まで待機
         yield return new WaitUntil(() => !audioSource.isPlaying);
@@ -93,13 +95,28 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayAnotherAnswerAudio()
     {
         // ランダムに別の回答の音声を再生する
-        audioSource.clip = audioDataBase.GetRandomAnswerAudioData(systemModel.questionID);
+        // なぜか音声が長時間読み込まれてしまうものがあるので，それを避ける
+        // 時間はMicrophone.StartのlengthSec引数の値に依存している
+        while (true)
+        {
+            audioSource.clip = audioDataBase.GetRandomAnswerAudioData(systemModel.questionID);
+            Debug.Log(audioSource.clip.length);
+
+            // 音声の長さがピッタリ整数値の場合はエラーの可能性があるので再取得
+            if (audioSource.clip.length != Mathf.Floor(audioSource.clip.length)) break;
+        }
+        
         audioSource.Play();
 
-        Debug.Log("他者回答再生");
+        
 
         // 音声の再生終了まで待機
         yield return new WaitUntil(() => !audioSource.isPlaying);
+    }
+
+    private void Update()
+    {
+        //Debug.Log(!audioSource.isPlaying);
     }
 
 

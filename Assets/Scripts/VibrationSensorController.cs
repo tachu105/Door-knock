@@ -37,7 +37,6 @@ public class VibrationSensorController : MonoBehaviour
         // 振動センサの値の変化を監視
         while(true)
         {
-            
             if (systemModel.CheckVibrationSensorChange(out currentState)) break;
             yield return null;
         }
@@ -45,7 +44,7 @@ public class VibrationSensorController : MonoBehaviour
         if(currentState)
         {
             systemModel.knockCount++;
-            Debug.Log(systemModel.knockCount);
+            Debug.Log("ノック回数："+systemModel.knockCount);
             // 一定時間経過後にノックカウントをリセットする機能を更新
             if (resetCountTimer != null) StopCoroutine(resetCountTimer);
             resetCountTimer = StartCoroutine(ResetKnockCountTimer(systemModel.knockResetTime));

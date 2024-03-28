@@ -55,7 +55,7 @@ public class AudioDataBase : MonoBehaviour
         }
 
         //ランダムで回答音声データを返す
-        int randomIndex = UnityEngine.Random.Range(0, audioDatas[questionID].answerAudios.Count-1);
+        int randomIndex = UnityEngine.Random.Range(0, audioDatas[questionID].answerAudios.Count - 1);
         return audioDatas[questionID].answerAudios[randomIndex];
     }
 

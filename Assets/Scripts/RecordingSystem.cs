@@ -8,13 +8,14 @@ using UnityEngine;
 
 public class RecordingSystem : MonoBehaviour
 {
-    AudioClip myclip;
-    AudioSource audioSource;
+    AudioClip recordedClip;
     [SerializeField] string micName;   //マイクデバイスの名前 nullを入れるとデフォルトのマイクを使用する
     [SerializeField] int micNum;    //マイクの配列要素番号
+
+    [SerializeField, Tooltip("録音を無効とする音声データの長さ")] 
+    float disableRecordingTime = 1.0f; 
+
     int samplingFrequency = 44100;  //サンプリング周波数
-    int maxTime = 10;//最大録音時間
-    private bool isRecording = false;
     private float recordingStartTime;
 
     // Start is called before the first frame update
@@ -32,25 +33,16 @@ public class RecordingSystem : MonoBehaviour
     }
 
 
-    public void StartRecording()
+    public void StartRecording(int maxRecordingTime)
     {
         Debug.Log("recording start!");
-        isRecording = true;
         //deviceName => "null" デフォルトのマイクを指定
         //Microphone.Startで録音を開始（マイクデバイスの名前、ループするかどうか、録音時間[s], サンプリング周波数）
         //録音データはAudioClip変数に保存される
-        myclip = Microphone.Start(deviceName: micName, loop: false, lengthSec: maxTime, frequency: samplingFrequency);
+        recordedClip = Microphone.Start(deviceName: micName, loop: false, lengthSec: maxRecordingTime*2, frequency: samplingFrequency);
         recordingStartTime = Time.time;
     }
 
-    void Update()
-    {
-        /*
-        if (isRecording && Time.time >= recordingStartTime + maxTime)
-        {
-            EndButton();
-        }*/
-    }
 
     /// <summary>
     /// 録音停止処理
@@ -64,9 +56,16 @@ public class RecordingSystem : MonoBehaviour
         {
             Debug.Log("recording stoped");
             Microphone.End(deviceName: micName);
-            isRecording = false;
+
+            //1秒未満の録音データは無効とする
+            if (Time.time - recordingStartTime < disableRecordingTime)
+            {
+                recordedClip = null;
+                return;
+            }
+
             recordingSessionCount++;
-            recordedClip = myclip;
+            recordedClip = this.recordedClip;
             SaveWav(ref recordingSessionCount, folderName);
         }
         else
@@ -76,13 +75,7 @@ public class RecordingSystem : MonoBehaviour
         
     }
 
-    public void PlayButton()
-    {
-        Debug.Log("play");
-        audioSource = gameObject.GetComponent<AudioSource>();
-        audioSource.clip = myclip;
-        audioSource.Play();
-    }
+
     void SaveWav(ref int recordingSessionCount,string fileName)
     {
         // Calculate recording duration
@@ -91,7 +84,7 @@ public class RecordingSystem : MonoBehaviour
         // Clip the recorded audio
         int samplesToClip = (int)(recordingDuration * samplingFrequency);
         float[] samples = new float[samplesToClip];
-        myclip.GetData(samples, 0);
+        recordedClip.GetData(samples, 0);
 
         // Set the file path
         string filePath = Path.Combine(Application.dataPath + "/Audios/" + fileName, "recordedAudio"+recordingSessionCount+".wav");
@@ -127,6 +120,14 @@ public class RecordingSystem : MonoBehaviour
         fileStream.Close();
 
         Debug.Log("WAV file saved at: " + filePath);
+    }
+
+    void OnApplicationQuit()
+    {
+        if (Microphone.IsRecording(deviceName: micName) == true)
+        {
+            Microphone.End(deviceName: micName);
+        }
     }
 
 }

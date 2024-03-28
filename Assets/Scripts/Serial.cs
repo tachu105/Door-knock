@@ -11,7 +11,11 @@ public class Serial : MonoBehaviour
 
     [SerializeField] SystemModel systemModel;
 
+    [SerializeField] bool isDebugSerial = false;
+
     bool isDoneFirstReceive = false;
+
+    SystemModel.SystemPhase preSystemPhase;
 
 
     void Start()
@@ -29,10 +33,13 @@ public class Serial : MonoBehaviour
 
     void Update()
     {
-        if(systemModel.CheckPhaseChange())
+         //システムのフェーズが変わった場合、バッファを削除する
+         //CheckPhaseChange()を参照すると何故か固まる
+        if(preSystemPhase != systemModel.currentPhase)
         {
             ClearBuffer();
         }
+        preSystemPhase = systemModel.currentPhase;
     }
 
 
@@ -46,7 +53,11 @@ public class Serial : MonoBehaviour
 
             if (isDoneFirstReceive)
             {
-                Debug.Log(receivedData);
+                if (isDebugSerial)
+                {
+                    Debug.Log(receivedData);
+                }
+                
                 SeparateDatas(receivedData);
             }
             else

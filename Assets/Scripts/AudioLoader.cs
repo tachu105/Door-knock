@@ -7,8 +7,6 @@ public class AudioLoader : MonoBehaviour
 {
     private string audiosFolderPath; //audiosのフォルダのパス 
 
-    private List<AudioClip> audioClips = new List<AudioClip>();
-
 
 
     /// <summary>

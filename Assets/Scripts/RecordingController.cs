@@ -15,12 +15,15 @@ public class RecordingController : MonoBehaviour
 
     bool isCancelRecording = false; //システムリセット
     bool isStopRecording = false;   //録音終了
+
+    bool isDoneAgainQuestion = false;   //再度質問を再生したかどうか
     
     // Start is called before the first frame update
     void Start()
     {
         isCancelRecording = false;
         isStopRecording = false;
+        isDoneAgainQuestion = false;
 
         StartCoroutine(RecordingControl());
     }
@@ -50,8 +53,9 @@ public class RecordingController : MonoBehaviour
         while (true)
         {
             //タッチセンサー感知
-            if(systemModel.CheckTouchSensorChange(out currentState) && currentState)
+            if(systemModel.GetTouchSensorState())
             {
+                isDoneAgainQuestion = false;
                 StopCoroutine(resetCoroutine);
                 break;
             }
@@ -117,15 +121,28 @@ public class RecordingController : MonoBehaviour
 
 
     /// <summary>
-    /// 一定時間録音が開始されなかった場合，システムリセット
+    /// 一定時間録音が開始されなかった場合，システムリセットまたは再度質問を再生する処理
     /// </summary>
     /// <param name="waitTime">システムリセットまでの制限時間</param>
     /// <returns></returns>
     IEnumerator ResetKnockCountTimer(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
-        isCancelRecording = true;
-        systemModel.currentPhase = SystemModel.SystemPhase.SystemReset;
+
+        //録音催促2回目
+        if (isDoneAgainQuestion)
+        {
+            isDoneAgainQuestion = false;
+            isCancelRecording = true;
+            systemModel.currentPhase = SystemModel.SystemPhase.SystemReset;
+        }
+        //録音催促1回目
+        else
+        {
+            isDoneAgainQuestion = true;
+            isCancelRecording = true;
+            systemModel.currentPhase = SystemModel.SystemPhase.PlayQuestionAgain;
+        }        
     }
 
     /// <summary>

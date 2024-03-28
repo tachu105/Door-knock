@@ -19,6 +19,7 @@ public class SystemModel : MonoBehaviour
         WaitTouch,
         AnswerRecord,
         PlayAnotherAnswer,
+        PlayQuestionAgain,
         SystemReset
     }
 
@@ -107,6 +108,11 @@ public class SystemModel : MonoBehaviour
     public void SetTouchSensorState(bool state)
     {
         touchSensorCurrentState = state;
+    }
+
+    public bool GetTouchSensorState()
+    {
+        return touchSensorCurrentState;
     }
 
 

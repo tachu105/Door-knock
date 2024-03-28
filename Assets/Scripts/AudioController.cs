@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -10,6 +11,8 @@ public class AudioController : MonoBehaviour
     private SystemModel systemModel;
     private AudioDataBase audioDataBase;
     private AudioSource audioSource;
+
+    private AudioClip currentQuestionClip;
 
     
 
@@ -57,6 +60,10 @@ public class AudioController : MonoBehaviour
                 yield return StartCoroutine(PlaySystemResetAudio());  //音声の再生が終わるまで待機
                 systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
                 break;
+            case SystemModel.SystemPhase.PlayQuestionAgain:
+                yield return StartCoroutine(PlayQuestionAudioAgain());
+                systemModel.currentPhase = SystemModel.SystemPhase.WaitTouch;
+                break;
             default:
                 yield return null;
                 // それ以外のフェーズの場合は再起
@@ -79,13 +86,30 @@ public class AudioController : MonoBehaviour
         systemModel.questionID = audioDataBase.GetRandomQuestionID();
 
         // 質問の音声を再生する
-        audioSource.clip = audioDataBase.GetQuestionAudioData(systemModel.questionID);
+        currentQuestionClip = audioDataBase.GetQuestionAudioData(systemModel.questionID);
+        audioSource.clip = currentQuestionClip;
         audioSource.Play();
 
         Debug.Log("質問音声再生");
         Debug.Log(audioSource.clip.length);
 
         // 音声の再生終了まで待機
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+    }
+
+
+    /// <summary>
+    /// 再度質問して録音を促す音声を再生する
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator PlayQuestionAudioAgain()
+    {
+        //同じ質問を再度再生
+        audioSource.clip = currentQuestionClip;
+        audioSource.Play();
+
+        Debug.Log("二度目の質問音声再生");
+
         yield return new WaitUntil(() => !audioSource.isPlaying);
     }
 
@@ -144,6 +168,7 @@ public class AudioController : MonoBehaviour
     /// <returns></returns>
     IEnumerator PlayPromptKnockAudio()
     {
+        yield return new WaitUntil(() => systemModel.currentPhase == SystemModel.SystemPhase.WaitKnock);
         yield return new WaitForSeconds(systemModel.promptKnockIntervalMinutes * 60);
 
         if(systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock)

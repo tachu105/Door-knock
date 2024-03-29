@@ -80,11 +80,15 @@ public class SystemModel : MonoBehaviour
     [SerializeField, Tooltip("ノックを促す音声の再生間隔（分）")]
     public int promptKnockIntervalMinutes = 15;
 
+    [SerializeField, Tooltip("この時間以上手が離されていたら録音停止")]
+    public float recordingStopBufferTime = 0.5f;
+
     //録音時間　なぜかSerializeから変更できない
     //なるべく変えない
     //変えたら今までの録音データを削除する
     [HideInInspector]
     public int recordingTime = 10;
+
 
 
     private void Awake()

@@ -12,6 +12,7 @@ public class RecordingController : MonoBehaviour
 
     Coroutine resetCoroutine;
     Coroutine stopRecordingTimerCoroutine;
+    Coroutine recStopByTouchSensorCoroutine;
 
     bool isCancelRecording = false; //システムリセット
     bool isStopRecording = false;   //録音終了
@@ -83,18 +84,29 @@ public class RecordingController : MonoBehaviour
         //録音終了を監視
         while (true)
         {
-            //タッチセンサーがオフになったことによる録音終了
-            if(systemModel.CheckTouchSensorChange(out currentState) && !currentState)
+            //タッチセンサーが変動したとき
+            if(systemModel.CheckTouchSensorChange(out currentState))
             {
-                StopCoroutine(stopRecordingTimerCoroutine);
-                Debug.Log("タッチセンサーオフによる録音停止");
-                break;
+                //タッチセンサーがオフ→オンになったとき
+                if (currentState)
+                {
+                    //手が離されたことはノイズとして扱い，録音を継続
+                    if(recStopByTouchSensorCoroutine != null) StopCoroutine(recStopByTouchSensorCoroutine);
+                }
+                //タッチセンサーがオン→オフになったとき
+                else
+                {
+                    //手が離されたことを検知し，一定時間再びタッチセンサーがオンにならなかった場合，録音を終了
+                    recStopByTouchSensorCoroutine = StartCoroutine(RecordingStopByTouchSensor(systemModel.recordingStopBufferTime));
+                }
             }
-            //時間制限による録音終了
+
+            //録音終了
             if (isStopRecording)
             {
+                if(recStopByTouchSensorCoroutine != null) StopCoroutine(recStopByTouchSensorCoroutine);
+                if(stopRecordingTimerCoroutine != null) StopCoroutine(stopRecordingTimerCoroutine);
                 isStopRecording = false;
-                Debug.Log("タイマーによる録音停止");
                 break;
             }
 
@@ -154,5 +166,18 @@ public class RecordingController : MonoBehaviour
     {
         yield return new WaitForSeconds(recordTime);
         isStopRecording = true;
+        Debug.Log("タイマーによる録音停止");
+    }
+
+
+    /// <summary>
+    /// タッチセンサーがオフになったとき，一定時間経過後に録音を終了させる処理
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator RecordingStopByTouchSensor(float bufferTime)
+    {
+        yield return new WaitForSeconds(bufferTime);
+        isStopRecording = true;
+        Debug.Log("タッチセンサーオフによる録音停止");
     }
 }

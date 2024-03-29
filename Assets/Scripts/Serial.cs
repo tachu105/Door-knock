@@ -21,7 +21,7 @@ public class Serial : MonoBehaviour
     void Start()
     {
         //COMポート番号とポートレートをArduinoと合わせる
-        serialPort = new SerialPort("COM3", 9600);  
+        serialPort = new SerialPort("COM" + comPortNum.ToString(), bandRate);  
         serialPort.Open();  //シリアル通信を開始する
         isDoneFirstReceive = false;
 

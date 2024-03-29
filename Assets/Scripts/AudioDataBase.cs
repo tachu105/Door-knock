@@ -41,6 +41,19 @@ public class AudioDataBase : MonoBehaviour
     [SerializeField, Tooltip("ノックを促す音声")]
     public AudioClip promptKnockAudio;
 
+    [SerializeField, Tooltip("ドアノブタッチを促す音声")]
+    public AudioClip promptTouchAudio;
+
+    [SerializeField, Tooltip("ノック後の音声")]
+    public AudioClip afterKnockAudio;
+
+    [SerializeField, Tooltip("録音後の音声")]
+    public AudioClip afterRecordingAudio;
+
+    [SerializeField, Tooltip("最後の会話")]
+    public AudioClip lastConversationAudio;
+
+
     AudioLoader audioLoader;
 
     /// <summary>

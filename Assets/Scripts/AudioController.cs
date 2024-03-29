@@ -82,6 +82,16 @@ public class AudioController : MonoBehaviour
     /// </summary>
     IEnumerator PlayQuestionAudio()
     {
+        //質問前導入音声
+        audioSource.clip = audioDataBase.afterKnockAudio;
+        audioSource.Play();
+
+        Debug.Log("質問前導入音声再生");
+
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+
+
+
         // ランダムな質問IDを取得する
         systemModel.questionID = audioDataBase.GetRandomQuestionID();
 
@@ -104,6 +114,13 @@ public class AudioController : MonoBehaviour
     /// <returns></returns>
     IEnumerator PlayQuestionAudioAgain()
     {
+        audioSource.clip = audioDataBase.promptTouchAudio;
+        audioSource.Play();
+
+        Debug.Log("タッチを促す音声を再生");
+
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+
         //同じ質問を再度再生
         audioSource.clip = currentQuestionClip;
         audioSource.Play();
@@ -119,6 +136,13 @@ public class AudioController : MonoBehaviour
     /// </summary>
     IEnumerator PlayAnotherAnswerAudio()
     {
+        //録音後の他者回答までの導入再生
+        audioSource.clip = audioDataBase.afterRecordingAudio;
+        audioSource.Play();
+
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+
+
         // ランダムに別の回答の音声を再生する
         // なぜか音声が長時間読み込まれてしまうものがあるので，それを避ける
         // 時間はMicrophone.StartのlengthSec引数の値に依存している
@@ -132,10 +156,15 @@ public class AudioController : MonoBehaviour
         }
         
         audioSource.Play();
-
         
-
         // 音声の再生終了まで待機
+        yield return new WaitUntil(() => !audioSource.isPlaying);
+
+
+        //別れの会話を再生
+        audioSource.clip = audioDataBase.lastConversationAudio;
+        audioSource.Play();
+
         yield return new WaitUntil(() => !audioSource.isPlaying);
     }
 

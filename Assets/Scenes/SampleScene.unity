@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311918, g: 0.3807398, b: 0.35872716, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -359,13 +359,83 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audioDatas:
-  - questionSummary: Animal
-    folderName: Animal
-    questionAudio: {fileID: 8300000, guid: 1b81e4ba38dd2b24a98b952b96e8d0e0, type: 3}
+  - questionSummary: AnimalCry
+    folderName: AnimalCry
+    questionAudio: {fileID: 8300000, guid: 67667589d7d024a43879156f58c13f10, type: 3}
     answerAudios: []
     allAnswerFileCount: 0
-  maxHoldNumOfAudioDatas: 10
-  systemResetAudio: {fileID: 0}
+  - questionSummary: CountryWantToGo
+    folderName: CountryWantToGo
+    questionAudio: {fileID: 8300000, guid: 8b23994dafc8adc408fc27a0ec0ac9c2, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: FavoriteBook
+    folderName: FavoriteBook
+    questionAudio: {fileID: 8300000, guid: b2e38c84301d6494bbe8bfd905818ee5, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: FutureDream
+    folderName: FutureDream
+    questionAudio: {fileID: 8300000, guid: d782c479aa9f8aa4bb8a5c8c87193376, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: Invisible
+    folderName: Invisble
+    questionAudio: {fileID: 8300000, guid: 6afc55f3c4bb559498fd75bbdddcd99f, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: LastDinner
+    folderName: LastDinner
+    questionAudio: {fileID: 8300000, guid: dbf93e9e971f1694fbae4561b4730334, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: LikeColor
+    folderName: LikeColor
+    questionAudio: {fileID: 8300000, guid: 6b19eef3d57eeb747b95c9a6ed55cc32, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: LikeFood
+    folderName: LikeFood
+    questionAudio: {fileID: 8300000, guid: 782d710cdd7e7074ab276c513f06d535, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: LikeLivingThing
+    folderName: LikeLivingThing
+    questionAudio: {fileID: 8300000, guid: 413b7f7ea2078e24db1965c0aae7cb5e, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: NamingStar
+    folderName: NamingStar
+    questionAudio: {fileID: 8300000, guid: 713312d2b8c3823469eb2f1a2fd3a95f, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: Reincarnation
+    folderName: Reincarnation
+    questionAudio: {fileID: 8300000, guid: b2eadf629d8d21649973a42c2d77735a, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: RespectPerson
+    folderName: RespectPerson
+    questionAudio: {fileID: 8300000, guid: 303a5ee2d669dd943b2429c7ae3fa065, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: Santa
+    folderName: Santa
+    questionAudio: {fileID: 8300000, guid: 57e1834c715bf754a968dc6d3ee7c6f4, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  - questionSummary: ScaredThing
+    folderName: ScaredThing
+    questionAudio: {fileID: 8300000, guid: 22dd7e9628d4b6844a06000c5a80badf, type: 3}
+    answerAudios: []
+    allAnswerFileCount: 0
+  maxHoldNumOfAudioDatas: 30
+  systemResetAudio: {fileID: 8300000, guid: 0372c85f2e96c1b45a913b778153e326, type: 3}
+  promptKnockAudio: {fileID: 8300000, guid: ccdb1a1ddf49c2a4d85fd3feb6ef7bda, type: 3}
+  promptTouchAudio: {fileID: 8300000, guid: 8ab57294eede0804886389e3e9db99cc, type: 3}
+  afterKnockAudio: {fileID: 8300000, guid: e6e9c9de4e034ce4997043dc09da78f7, type: 3}
+  afterRecordingAudio: {fileID: 8300000, guid: a76d1439fcb936048a545773e06f0453, type: 3}
+  lastConversationAudio: {fileID: 8300000, guid: fbfa9aaf0e49cc246a515c35e292dfce, type: 3}
 --- !u!4 &1223303726
 Transform:
   m_ObjectHideFlags: 0
@@ -472,6 +542,7 @@ MonoBehaviour:
   knockThreshold: 3
   knockResetTime: 1
   touchResetTime: 10
+  promptKnockIntervalMinutes: 15
   recordingTime: 10
 --- !u!4 &1456763743
 Transform:

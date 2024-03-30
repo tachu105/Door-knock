@@ -76,7 +76,7 @@ public class RecordingSystem : MonoBehaviour
     }
 
 
-    void SaveWav(ref int recordingSessionCount,string fileName)
+    void SaveWav(ref int recordingSessionCount,string folderName)
     {
         // Calculate recording duration
         float recordingDuration = Time.time - recordingStartTime;
@@ -86,8 +86,9 @@ public class RecordingSystem : MonoBehaviour
         float[] samples = new float[samplesToClip];
         recordedClip.GetData(samples, 0);
 
+        
         // Set the file path
-        string filePath = Path.Combine(Application.dataPath + "/Audios/" + fileName, "recordedAudio"+recordingSessionCount+".wav");
+        string filePath = Path.Combine(Application.dataPath + "/Audios/" + folderName, "recordedAudio"+ System.DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".wav");
         //保存するwavファイルの名前、保存場所はこの関数の引数で制御できます。
 
         // Create WAV file

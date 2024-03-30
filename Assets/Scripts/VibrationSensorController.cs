@@ -12,7 +12,6 @@ public class VibrationSensorController : MonoBehaviour
     private void Start()
     {
         systemModel = GetComponent<SystemModel>();
-
         StartCoroutine(CountKnock());
     }
 

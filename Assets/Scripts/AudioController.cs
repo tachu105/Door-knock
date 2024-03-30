@@ -83,6 +83,7 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayQuestionAudio()
     {
         //質問前導入音声
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.afterKnockAudio;
         audioSource.Play();
 
@@ -97,6 +98,7 @@ public class AudioController : MonoBehaviour
 
         // 質問の音声を再生する
         currentQuestionClip = audioDataBase.GetQuestionAudioData(systemModel.questionID);
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = currentQuestionClip;
         audioSource.Play();
 
@@ -114,6 +116,7 @@ public class AudioController : MonoBehaviour
     /// <returns></returns>
     IEnumerator PlayQuestionAudioAgain()
     {
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.promptTouchAudio;
         audioSource.Play();
 
@@ -122,6 +125,7 @@ public class AudioController : MonoBehaviour
         yield return new WaitUntil(() => !audioSource.isPlaying);
 
         //同じ質問を再度再生
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = currentQuestionClip;
         audioSource.Play();
 
@@ -137,6 +141,7 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayAnotherAnswerAudio()
     {
         //録音後の他者回答までの導入再生
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.afterRecordingAudio;
         audioSource.Play();
 
@@ -155,6 +160,7 @@ public class AudioController : MonoBehaviour
             if (audioSource.clip.length != Mathf.Floor(audioSource.clip.length)) break;
         }
         
+        audioSource.volume = systemModel.recordedAudioVolume;
         audioSource.Play();
         
         // 音声の再生終了まで待機
@@ -162,6 +168,7 @@ public class AudioController : MonoBehaviour
 
 
         //別れの会話を再生
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.lastConversationAudio;
         audioSource.Play();
 
@@ -181,6 +188,7 @@ public class AudioController : MonoBehaviour
     IEnumerator PlaySystemResetAudio()
     {
         // システムリセットの音声を再生する
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.systemResetAudio;
         audioSource.Play();
 
@@ -207,6 +215,7 @@ public class AudioController : MonoBehaviour
             yield break;
         }
 
+        audioSource.volume = systemModel.systemAudioVolume;
         audioSource.clip = audioDataBase.promptKnockAudio;
         audioSource.Play();
 

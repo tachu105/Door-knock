@@ -544,6 +544,8 @@ MonoBehaviour:
   touchResetTime: 10
   promptKnockIntervalMinutes: 15
   recordingStopBufferTime: 0.5
+  systemAudioVolume: 1
+  recordedAudioVolume: 1
   recordingTime: 10
 --- !u!4 &1456763743
 Transform:

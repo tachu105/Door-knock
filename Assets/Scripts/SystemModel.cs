@@ -83,6 +83,12 @@ public class SystemModel : MonoBehaviour
     [SerializeField, Tooltip("この時間以上手が離されていたら録音停止")]
     public float recordingStopBufferTime = 0.5f;
 
+    [SerializeField, Tooltip("AIの音声の音量"), Range(0,1)]
+    public float systemAudioVolume = 1.0f;
+
+    [SerializeField, Tooltip("録音した音声の音量"), Range(0, 1)]
+    public float recordedAudioVolume = 1.0f;
+
     //録音時間　なぜかSerializeから変更できない
     //なるべく変えない
     //変えたら今までの録音データを削除する

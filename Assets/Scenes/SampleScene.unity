@@ -543,8 +543,8 @@ MonoBehaviour:
   knockResetTime: 1
   touchResetTime: 10
   promptKnockIntervalMinutes: 15
-  recordingStopBufferTime: 0.5
-  systemAudioVolume: 1
+  recordingStopBufferTime: 0.1
+  systemAudioVolume: 0.7
   recordedAudioVolume: 1
   recordingTime: 10
 --- !u!4 &1456763743

@@ -3,50 +3,41 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-public class AudioLoader : MonoBehaviour
+public static class AudioLoader
 {
-    private string audiosFolderPath; //audiosのフォルダのパス 
-
-
-
     /// <summary>
     /// 指定フォルダから，オーディオファイルをロードして，リストに格納する
     /// </summary>
-    /// <param name="folderName">ロードするオーディオフォルダ名</param>
+    /// <param name="folderPath">ロードするオーディオフォルダ名</param>
     /// <param name="maxListCount">オーディオクリップリストの最大数</param>
     /// <param name="allFileCount">保存されているオーディオファイルの総数</param>
-    public void LoadAudioClips(string folderName, int maxListCount ,ref List<AudioClip> audioClips, out int allFileCount)
+    public static void LoadAudioClips(string folderPath, int maxListCount ,ref List<AudioClip> audioClips, out int allFileCount)
     {
-        audiosFolderPath = Application.dataPath + "/Audios/"; //Audiosフォルダのパスを取得
-
-
-        DirectoryInfo directoryInfo = new DirectoryInfo(audiosFolderPath + folderName);
+        DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
         FileInfo[] files = directoryInfo.GetFiles("*.wav");
 
         allFileCount = files.Length;
 
-        // 最新のファイルを優先的に取得するために、ファイルを作成日時で並び替えます。
+        // 最新のファイルを優先的に取得するためにファイルを作成日時で並び替え
         files = files.OrderByDescending(f => f.CreationTime).ToArray();
 
+        // ファイルから指定数のAudioClipをロード
         foreach (FileInfo file in files)
         {
-            if (audioClips.Count >= maxListCount)
-                break; // 最大数に達したらループを抜ける
+            if (audioClips.Count >= maxListCount)   break;
 
-            // AudioClipを作成し、リストに追加します。
             AudioClip audioClip = LoadAudioClipFromFile(file.FullName);
-            if (audioClip != null)
-            {
-                audioClips.Add(audioClip);
-            }
+            if (audioClip != null)  audioClips.Add(audioClip);
         }
     }
 
-    AudioClip LoadAudioClipFromFile(string filePath)
+    /// <summary>
+    /// 指定フォルダから，WAVファイルをロードしてAudioClipに変換するメソッド
+    /// </summary>
+    /// <param name="filePath"> WAVファイルのパス </param>
+    static AudioClip LoadAudioClipFromFile(string filePath)
     {
-        // WAVファイルをロードしてAudioClipに変換します。
         WWW www = new WWW("file:///" + filePath);
-        while (!www.isDone) { }
         if (!string.IsNullOrEmpty(www.error))
         {
             Debug.LogWarning("Failed to load audio file: " + filePath + ", Error: " + www.error);

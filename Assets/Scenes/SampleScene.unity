@@ -136,7 +136,6 @@ GameObject:
   - component: {fileID: 1223303724}
   - component: {fileID: 1223303727}
   - component: {fileID: 1223303728}
-  - component: {fileID: 1223303729}
   - component: {fileID: 1223303723}
   m_Layer: 0
   m_Name: AudioSystem
@@ -254,6 +253,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   systemModel: {fileID: 1456763742}
+  audioDataBase: {fileID: 1223303725}
+  audioSource: {fileID: 1223303723}
 --- !u!114 &1223303725
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -266,6 +267,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c697c336176846d4fb705117454b02f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  systemModel: {fileID: 1456763742}
   audioDatas:
   - questionSummary: AnimalCry
     folderName: AnimalCry
@@ -386,21 +388,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf14796e4defd8948bc3dc461891f5a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  micName: 
+  systemModel: {fileID: 1456763742}
   micNum: 0
   disableRecordingTime: 1
---- !u!114 &1223303729
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1223303722}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 010303ae9c5ed2049b3048ead3c30c51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1390485794
 GameObject:
   m_ObjectHideFlags: 0
@@ -524,6 +514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2367d2cf5ed69e249ae33cad21b0c271, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  systemModel: {fileID: 1456763742}
 --- !u!114 &1456763742
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -539,14 +530,14 @@ MonoBehaviour:
   currentPhase: 0
   questionID: 0
   knockCount: 0
-  knockThreshold: 2
-  knockResetTime: 1.5
-  touchResetTime: 10
-  promptKnockIntervalMinutes: 15
-  recordingStopBufferTime: 0.1
-  systemAudioVolume: 0.7
-  recordedAudioVolume: 1
   recordingTime: 10
+  knockThreshold: 3
+  repeatedKnockInterval: 1
+  touchWaitTime: 10
+  promptKnockIntervalMinutes: 15
+  recordingStopBufferTime: 0.5
+  systemAudioVolume: 1
+  recordedAudioVolume: 1
 --- !u!4 &1456763743
 Transform:
   m_ObjectHideFlags: 0
@@ -574,9 +565,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1914bedc43dfa5e4492863dc98a04594, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  systemModel: {fileID: 1456763742}
   comPortNum: 3
   bandRate: 9600
-  systemModel: {fileID: 1456763742}
   isDebugSerial: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

@@ -1,62 +1,47 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RecordingController : MonoBehaviour
 {
-    [SerializeField] SystemModel systemModel;
-    [SerializeField] AudioDataBase audioDataBase;
-    [SerializeField] RecordingSystem recordingSystem;
+    [SerializeField] private SystemModel systemModel;
+    [SerializeField] private AudioDataBase audioDataBase;
+    [SerializeField] private RecordingSystem recordingSystem;
 
-    AudioClip recordedClip;
+    private Coroutine resetCoroutine;
+    private Coroutine stopRecordingTimerCoroutine;
+    private Coroutine recStopByTouchSensorCoroutine;
+    private WaitUntil waitUntil_RecordingReadyState;
 
-    Coroutine resetCoroutine;
-    Coroutine stopRecordingTimerCoroutine;
-    Coroutine recStopByTouchSensorCoroutine;
-
-    bool isCancelRecording = false; //システムリセット
-    bool isStopRecording = false;   //録音終了
-
-    bool isDoneAgainQuestion = false;   //再度質問を再生したかどうか
+    private bool isCancelRecording;
+    private bool isStopRecording;
+    private bool isDoneSecondTimeQuestion;
     
-    // Start is called before the first frame update
+
     void Start()
     {
         isCancelRecording = false;
         isStopRecording = false;
-        isDoneAgainQuestion = false;
+        isDoneSecondTimeQuestion = false;
+
+        waitUntil_RecordingReadyState = new WaitUntil(() => systemModel.currentPhase == SystemModel.SystemPhase.WaitTouch);
 
         StartCoroutine(RecordingControl());
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     IEnumerator RecordingControl()
     {
-        bool currentState;
-
-        // 録音待機状態以外のときは再起
-        if (systemModel.currentPhase != SystemModel.SystemPhase.WaitTouch)
-        {
-            yield return null;
-            StartCoroutine(RecordingControl());
-            yield break;
-        }
+        yield return waitUntil_RecordingReadyState;
 
         //未タッチによるシステムリセットのタイマー作動
-        resetCoroutine = StartCoroutine(ResetKnockCountTimer(systemModel.touchResetTime));
+        resetCoroutine = StartCoroutine(ResetKnockCountTimer(systemModel.TouchWaitTime));
 
         //録音開始を監視
         while (true)
         {
             //タッチセンサー感知
-            if(systemModel.GetTouchSensorState())
+            if(systemModel.touchSensorCurrentState)
             {
-                isDoneAgainQuestion = false;
+                isDoneSecondTimeQuestion = false;
                 StopCoroutine(resetCoroutine);
                 break;
             }
@@ -65,7 +50,6 @@ public class RecordingController : MonoBehaviour
             {
                 isCancelRecording = false;
 
-                yield return null;
                 StartCoroutine(RecordingControl());
                 yield break;
             }
@@ -73,9 +57,8 @@ public class RecordingController : MonoBehaviour
             yield return null;
         }
 
-        recordingSystem.StartRecording(systemModel.recordingTime);   //録音開始
-        
-        //録音フェーズに変更
+        //録音開始（録音ミスを防ぐため，録音時間にバッファを持たせる）
+        recordingSystem.StartRecording(systemModel.recordingTime * 2);   
         systemModel.currentPhase = SystemModel.SystemPhase.AnswerRecord;
 
         //録音停止タイマー作動
@@ -84,11 +67,10 @@ public class RecordingController : MonoBehaviour
         //録音終了を監視
         while (true)
         {
-            //タッチセンサーが変動したとき
-            if(systemModel.CheckTouchSensorChange(out currentState))
+            if (systemModel.CheckTouchSensorChange(out bool newSensorState))
             {
                 //タッチセンサーがオフ→オンになったとき
-                if (currentState)
+                if (newSensorState)
                 {
                     //手が離されたことはノイズとして扱い，録音を継続
                     if(recStopByTouchSensorCoroutine != null) StopCoroutine(recStopByTouchSensorCoroutine);
@@ -97,7 +79,7 @@ public class RecordingController : MonoBehaviour
                 else
                 {
                     //手が離されたことを検知し，一定時間再びタッチセンサーがオンにならなかった場合，録音を終了
-                    recStopByTouchSensorCoroutine = StartCoroutine(RecordingStopByTouchSensor(systemModel.recordingStopBufferTime));
+                    recStopByTouchSensorCoroutine = StartCoroutine(RecordingStopByTouchSensor(systemModel.RecordingStopBufferTime));
                 }
             }
 
@@ -113,19 +95,16 @@ public class RecordingController : MonoBehaviour
             yield return null;
         }
 
-        AudioDataBase.AudioData currentAudioData = audioDataBase.GetAudioData(systemModel.questionID);  //現在の質問のオーディオデータベースを取得
-        recordingSystem.StopRecording(out recordedClip, ref currentAudioData.allAnswerFileCount, currentAudioData.folderName); //録音終了＆録音データ取得
+        //録音停止＆録音データ取得
+        AudioDataBase.AudioData currentAudioData = audioDataBase.GetAudioData(systemModel.questionID);
+        recordingSystem.StopRecording(out AudioClip recordedClip, ref currentAudioData.allAnswerFileCount, currentAudioData.folderName);
 
         //録音データをデータベースに保存
         if(recordedClip!= null)
-        {
             audioDataBase.SetAnswerAudioData(systemModel.questionID,recordedClip);
-        }
 
-        //フェーズ変更
         systemModel.currentPhase = SystemModel.SystemPhase.PlayAnotherAnswer;
 
-        yield return null;
         StartCoroutine(RecordingControl());
     }
 
@@ -136,22 +115,21 @@ public class RecordingController : MonoBehaviour
     /// 一定時間録音が開始されなかった場合，システムリセットまたは再度質問を再生する処理
     /// </summary>
     /// <param name="waitTime">システムリセットまでの制限時間</param>
-    /// <returns></returns>
     IEnumerator ResetKnockCountTimer(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
 
         //録音催促2回目
-        if (isDoneAgainQuestion)
+        if (isDoneSecondTimeQuestion)
         {
-            isDoneAgainQuestion = false;
+            isDoneSecondTimeQuestion = false;
             isCancelRecording = true;
             systemModel.currentPhase = SystemModel.SystemPhase.SystemReset;
         }
         //録音催促1回目
         else
         {
-            isDoneAgainQuestion = true;
+            isDoneSecondTimeQuestion = true;
             isCancelRecording = true;
             systemModel.currentPhase = SystemModel.SystemPhase.PlayQuestionAgain;
         }        
@@ -161,7 +139,6 @@ public class RecordingController : MonoBehaviour
     /// 指定時間経過後，録音を終了させる処理
     /// </summary>
     /// <param name="recordTime">録音最長時間</param>
-    /// <returns></returns>
     IEnumerator RecordingTimer(float recordTime)
     {
         yield return new WaitForSeconds(recordTime);
@@ -173,7 +150,6 @@ public class RecordingController : MonoBehaviour
     /// <summary>
     /// タッチセンサーがオフになったとき，一定時間経過後に録音を終了させる処理
     /// </summary>
-    /// <returns></returns>
     IEnumerator RecordingStopByTouchSensor(float bufferTime)
     {
         yield return new WaitForSeconds(bufferTime);

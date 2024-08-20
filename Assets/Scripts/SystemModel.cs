@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml.Serialization;
 using UnityEngine;
 
 /// <summary>
@@ -23,43 +20,24 @@ public class SystemModel : MonoBehaviour
         SystemReset
     }
 
-
-    /// <summary>
-    /// 現在の振動センサの値
-    /// </summary>
-    private bool vibrationSensorCurrentState;
-
-    /// <summary>
-    /// 前回の振動センサの値
-    /// </summary>
-    private bool preVibrationSensorState;
-
-    /// <summary>
-    /// 現在のタッチセンサの値
-    /// </summary>
-    private bool touchSensorCurrentState;
-
-    /// <summary>
-    /// 前回のタッチセンサの値
-    /// </summary>
-    private bool preTouchSensorState;
+    //センサー値
+    public bool vibrationSensorCurrentState { get; set; }
+    public bool touchSensorCurrentState { get; set; }
+    private bool vibrationSensorPreState;
+    private bool touchSensorPreState;
 
     /// <summary>
     /// システムのフェーズ
     /// </summary>
     [HideInInspector]
     public SystemPhase currentPhase;
-
-    /// <summary>
-    /// システムのフェーズの変更前のフェーズ
-    /// </summary>
     private SystemPhase prePhase;
 
     /// <summary>
     /// 現在の質問ID
     /// </summary>
     [HideInInspector]
-    public int questionID;
+    public uint questionID;
 
     /// <summary>
     /// ノックの回数
@@ -67,27 +45,11 @@ public class SystemModel : MonoBehaviour
     [HideInInspector]
     public int knockCount;
 
-
-    [SerializeField, Tooltip("音声を再生するノックの回数")]
-    public int knockThreshold = 3;
-
-    [SerializeField, Tooltip("指定時間以内に連続でノックされない場合はリセット")]
-    public float knockResetTime = 1.0f;
-
-    [SerializeField, Tooltip("指定時間以内にドアノブがタッチされない場合はリセット")]
-    public float touchResetTime = 10.0f;
-
-    [SerializeField, Tooltip("ノックを促す音声の再生間隔（分）")]
-    public int promptKnockIntervalMinutes = 15;
-
-    [SerializeField, Tooltip("この時間以上手が離されていたら録音停止")]
-    public float recordingStopBufferTime = 0.5f;
-
-    [SerializeField, Tooltip("AIの音声の音量"), Range(0,1)]
-    public float systemAudioVolume = 1.0f;
-
-    [SerializeField, Tooltip("録音した音声の音量"), Range(0, 1)]
-    public float recordedAudioVolume = 1.0f;
+    /// <summary>
+    /// オーディオデータフォルダのパス
+    /// </summary>
+    [HideInInspector]
+    public string audioDataFolderPath { get; private set; }
 
     //録音時間　なぜかSerializeから変更できない
     //なるべく変えない
@@ -96,40 +58,72 @@ public class SystemModel : MonoBehaviour
     public int recordingTime = 10;
 
 
+    [SerializeField, Tooltip("音声を再生するノックの回数")]
+    private int knockThreshold = 3;
+
+    [SerializeField, Tooltip("連続ノックと判定するノック間隔")]
+    private float repeatedKnockInterval = 1.0f;
+
+    [SerializeField, Tooltip("ドアノブタッチ待機の受付時間")]
+    private float touchWaitTime = 10.0f;
+
+    [SerializeField, Tooltip("ノックを促す音声の再生間隔（分）")]
+    private int promptKnockIntervalMinutes = 15;
+
+    [SerializeField, Tooltip("タッチ終了から録音停止処理までのバッファ時間")]
+    private float recordingStopBufferTime = 0.5f;
+
+    [SerializeField, Tooltip("AIの音声の音量"), Range(0,1)]
+    private float systemAudioVolume = 1.0f;
+
+    [SerializeField, Tooltip("録音した音声の音量"), Range(0, 1)]
+    private float recordedAudioVolume = 1.0f;
+
+    /// <summary>
+    /// 音声を再生するノックの回数
+    /// </summary>
+    public int KnockThreshold => knockThreshold;
+
+    /// <summary>
+    /// 連続ノックと判定するノック間隔
+    /// </summary>
+    public float RepeatedKnockInterval => repeatedKnockInterval;
+
+    /// <summary>
+    /// ドアノブタッチ待機の受付時間
+    /// </summary>
+    public float TouchWaitTime => touchWaitTime;
+
+    /// <summary>
+    /// ノックを促す音声の再生間隔（分）
+    /// </summary>
+    public int PromptKnockIntervalMinutes => promptKnockIntervalMinutes;
+
+    /// <summary>
+    /// タッチ終了から録音停止処理までのバッファ時間
+    /// </summary>
+    public float RecordingStopBufferTime => recordingStopBufferTime;
+
+    /// <summary>
+    /// AIの音声の音量
+    /// </summary>
+    public float SystemAudioVolume => systemAudioVolume;
+
+    /// <summary>
+    /// 録音した音声の音量
+    /// </summary>
+    public float RecordedAudioVolume => recordedAudioVolume;
+
 
     private void Awake()
     {
         currentPhase = SystemPhase.FileLoading;
+        audioDataFolderPath = Application.dataPath + "/Audios/";
     }
 
     /// <summary>
-    /// 振動センサの値を代入
+    /// SystemPhaseの変動有無を確認する
     /// </summary>
-    /// <param name="state">センサの値</param>
-    public void SetVibrationSensorState(bool state)
-    {
-        vibrationSensorCurrentState = state;
-    }
-
-    /// <summary>
-    /// タッチセンサの値を代入
-    /// </summary>
-    /// <param name="state">センサの値</param>
-    public void SetTouchSensorState(bool state)
-    {
-        touchSensorCurrentState = state;
-    }
-
-    public bool GetTouchSensorState()
-    {
-        return touchSensorCurrentState;
-    }
-
-
-    /// <summary>
-    /// SystemPhaseの変更の有無を確認する
-    /// </summary>
-    /// <returns></returns>
     public bool CheckPhaseChange()
     {
         if (currentPhase != prePhase)
@@ -141,45 +135,38 @@ public class SystemModel : MonoBehaviour
         return false;
     }
 
-
     /// <summary>
-    /// 振動センサの変化を確認する
+    /// 振動センサの変動有無を確認する
     /// </summary>
-    /// <returns></returns>
     public bool CheckVibrationSensorChange(out bool currentState)
     {
-        if (vibrationSensorCurrentState != preVibrationSensorState)
+        if (vibrationSensorCurrentState != vibrationSensorPreState)
         {
-            preVibrationSensorState = vibrationSensorCurrentState;
+            vibrationSensorPreState = vibrationSensorCurrentState;
             currentState = vibrationSensorCurrentState;
-            Debug.Log("振動センサー値変動");
             return true;
         }
         
-        preVibrationSensorState = vibrationSensorCurrentState;
+        vibrationSensorPreState = vibrationSensorCurrentState;
         currentState = vibrationSensorCurrentState;
         return false;
     }
 
-
     /// <summary>
-    /// タッチセンサの変化を確認する
+    /// タッチセンサの変動有無を確認する
     /// </summary>
-    /// <returns></returns>
     public bool CheckTouchSensorChange(out bool currentState)
     {
-        if (touchSensorCurrentState != preTouchSensorState)
+        if (touchSensorCurrentState != touchSensorPreState)
         {
-            preTouchSensorState = touchSensorCurrentState;
+            touchSensorPreState = touchSensorCurrentState;
             currentState = touchSensorCurrentState;
-            Debug.Log("タッチセンサー値変動");
             return true;
         }
-        preTouchSensorState = touchSensorCurrentState;
+        touchSensorPreState = touchSensorCurrentState;
         currentState = touchSensorCurrentState;
         return false;
     }
-
 
     /// <summary>
     /// 次のシステムフェーズに変更する

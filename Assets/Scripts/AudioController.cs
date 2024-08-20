@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -7,73 +6,69 @@ using UnityEngine;
 /// </summary>
 public class AudioController : MonoBehaviour
 {
-    [SerializeField]
-    private SystemModel systemModel;
-    private AudioDataBase audioDataBase;
-    private AudioSource audioSource;
+    [SerializeField] private SystemModel systemModel;
+    [SerializeField] private AudioDataBase audioDataBase;
+    [SerializeField] private AudioSource audioSource;
 
     private AudioClip currentQuestionClip;
 
-    
+    private WaitUntil waitUntil_AudioStop;
+    private WaitUntil waitUntil_SystemInactive;
+    private WaitUntil waitUntil_PhaseChange;
+    private WaitForSeconds waitSecond_PromptKnockInterval;
 
-    // Start is called before the first frame update
+
     void Start()
     {
-        audioDataBase = GetComponent<AudioDataBase>();
-        audioSource = GetComponent<AudioSource>();
+        waitUntil_AudioStop = new WaitUntil(() => !audioSource.isPlaying);
+        waitUntil_SystemInactive = new WaitUntil(() => systemModel.currentPhase == SystemModel.SystemPhase.WaitKnock);
+        waitUntil_PhaseChange = new WaitUntil(() => systemModel.CheckPhaseChange());
+        waitSecond_PromptKnockInterval = new WaitForSeconds(systemModel.PromptKnockIntervalMinutes * 60);
 
+        // オーディオファイルをロード
         audioDataBase.LoadAudioFiles();
 
+        // システムをアクション待機状態にする
         systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
 
-        StartCoroutine(PlayAudio());
-        StartCoroutine(PlayPromptKnockAudio());
+        StartCoroutine(ActiveAudioPlayer());
+        StartCoroutine(PromptKnockAudioPlayer());
     }
 
     /// <summary>
-    /// オーディオを再生する
+    /// アクティブ中，システムフェーズを監視し，オーディオを制御するコルーチン
     /// </summary>
-    /// <returns></returns>
-    IEnumerator PlayAudio()
+    IEnumerator ActiveAudioPlayer()
     {
-        // システムのフェーズ変更を監視
-        while (true)
-        {
-            if (systemModel.CheckPhaseChange()) break;
-            yield return null;
-        }
+        yield return waitUntil_PhaseChange;
 
-        // システムのフェーズによって再生する音声を変更する
         switch (systemModel.currentPhase)
         {
+            // 質問の音声を再生する
             case SystemModel.SystemPhase.PlayQuestion:
-                // 質問の音声を再生する
-                yield return StartCoroutine(PlayQuestionAudio());   //音声の再生が終わるまで待機
-                systemModel.ChangeNextSystemPhase();  //次のフェーズに変更
+                yield return StartCoroutine(PlayQuestionAudio());
+                systemModel.ChangeNextSystemPhase();
                 break;
+            // 他者の回答の音声を再生する
             case SystemModel.SystemPhase.PlayAnotherAnswer:
-                // 別の回答の音声を再生する
-                yield return StartCoroutine(PlayAnotherAnswerAudio());  //音声の再生が終わるまで待機
-                systemModel.ChangeNextSystemPhase();  //次のフェーズに変更
+                yield return StartCoroutine(PlayAnotherAnswerAudio());
+                systemModel.ChangeNextSystemPhase();
                 break;
+            // システムリセット時の音声を再生する
             case SystemModel.SystemPhase.SystemReset:
-                yield return StartCoroutine(PlaySystemResetAudio());  //音声の再生が終わるまで待機
+                yield return StartCoroutine(PlaySystemResetAudio());
                 systemModel.currentPhase = SystemModel.SystemPhase.WaitKnock;
                 break;
+            // 再質問音声を再生する
             case SystemModel.SystemPhase.PlayQuestionAgain:
                 yield return StartCoroutine(PlayQuestionAudioAgain());
                 systemModel.currentPhase = SystemModel.SystemPhase.WaitTouch;
                 break;
             default:
-                yield return null;
-                // それ以外のフェーズの場合は再起
-                StartCoroutine(PlayAudio());
-                yield break;
+                break;
         }
 
-        yield return null;
-        // 監視を再開
-        StartCoroutine(PlayAudio());
+        StartCoroutine(ActiveAudioPlayer());
     }
 
 
@@ -83,55 +78,44 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayQuestionAudio()
     {
         //質問前導入音声
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.afterKnockAudio;
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.AfterKnockAudio;
         audioSource.Play();
-
         Debug.Log("質問前導入音声再生");
 
-        yield return new WaitUntil(() => !audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
 
-
-
-        // ランダムな質問IDを取得する
+        // ランダムに質問音声を再生する
         systemModel.questionID = audioDataBase.GetRandomQuestionID();
-
-        // 質問の音声を再生する
-        currentQuestionClip = audioDataBase.GetQuestionAudioData(systemModel.questionID);
-        audioSource.volume = systemModel.systemAudioVolume;
+        currentQuestionClip = audioDataBase.GetQuestionAudioData((uint)systemModel.questionID);
+        audioSource.volume = systemModel.SystemAudioVolume;
         audioSource.clip = currentQuestionClip;
         audioSource.Play();
-
         Debug.Log("質問音声再生");
-        Debug.Log(audioSource.clip.length);
 
-        // 音声の再生終了まで待機
-        yield return new WaitUntil(() => !audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
     }
 
 
     /// <summary>
     /// 再度質問して録音を促す音声を再生する
     /// </summary>
-    /// <returns></returns>
     IEnumerator PlayQuestionAudioAgain()
     {
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.promptTouchAudio;
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.PromptTouchAudio;
         audioSource.Play();
-
         Debug.Log("タッチを促す音声を再生");
 
-        yield return new WaitUntil(() => !audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
 
         //同じ質問を再度再生
-        audioSource.volume = systemModel.systemAudioVolume;
+        audioSource.volume = systemModel.SystemAudioVolume;
         audioSource.clip = currentQuestionClip;
         audioSource.Play();
-
         Debug.Log("二度目の質問音声再生");
 
-        yield return new WaitUntil(() => !audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
     }
 
 
@@ -141,12 +125,11 @@ public class AudioController : MonoBehaviour
     IEnumerator PlayAnotherAnswerAudio()
     {
         //録音後の他者回答までの導入再生
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.afterRecordingAudio;
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.AfterRecordingAudio;
         audioSource.Play();
 
-        yield return new WaitUntil(() => !audioSource.isPlaying);
-
+        yield return waitUntil_AudioStop;
 
         // ランダムに別の回答の音声を再生する
         // なぜか音声が長時間読み込まれてしまうものがあるので，それを避ける
@@ -154,75 +137,60 @@ public class AudioController : MonoBehaviour
         while (true)
         {
             audioSource.clip = audioDataBase.GetRandomAnswerAudioData(systemModel.questionID);
-            Debug.Log(audioSource.clip.length);
 
             // 音声の長さがピッタリ整数値の場合はエラーの可能性があるので再取得
             if (audioSource.clip.length != Mathf.Floor(audioSource.clip.length)) break;
         }
-        
-        audioSource.volume = systemModel.recordedAudioVolume;
+        audioSource.volume = systemModel.RecordedAudioVolume;
         audioSource.Play();
         
-        // 音声の再生終了まで待機
-        yield return new WaitUntil(() => !audioSource.isPlaying);
-
+        yield return waitUntil_AudioStop;
 
         //別れの会話を再生
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.lastConversationAudio;
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.LastConversationAudio;
         audioSource.Play();
 
-        yield return new WaitUntil(() => !audioSource.isPlaying);
-    }
-
-    private void Update()
-    {
-        //Debug.Log(!audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
     }
 
 
     /// <summary>
     /// 時間切れなどでシステムをリセットする際の音声を再生する
     /// </summary>
-    /// <returns></returns>
     IEnumerator PlaySystemResetAudio()
     {
         // システムリセットの音声を再生する
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.systemResetAudio;
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.SystemResetAudio;
         audioSource.Play();
-
         Debug.Log("システムリセット音声再生");
 
-        // 音声の再生終了まで待機
-        yield return new WaitUntil(() => !audioSource.isPlaying);
+        yield return waitUntil_AudioStop;
     }
 
 
     /// <summary>
-    /// 一定時間置きに，ノックを促す音声を再生する
+    /// 待機状態時，一定時間置きにノックを促す音声を再生するコルーチン
     /// </summary>
-    /// <returns></returns>
-    IEnumerator PlayPromptKnockAudio()
+    IEnumerator PromptKnockAudioPlayer()
     {
-        yield return new WaitUntil(() => systemModel.currentPhase == SystemModel.SystemPhase.WaitKnock);
-        yield return new WaitForSeconds(systemModel.promptKnockIntervalMinutes * 60);
+        yield return waitUntil_SystemInactive;
+        yield return waitSecond_PromptKnockInterval;
 
         if(systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock)
         {
-            yield return null;
-            StartCoroutine(PlayPromptKnockAudio());
+            StartCoroutine(PromptKnockAudioPlayer());
             yield break;
         }
 
-        audioSource.volume = systemModel.systemAudioVolume;
-        audioSource.clip = audioDataBase.promptKnockAudio;
+        // ノックを促す音声を再生する
+        audioSource.volume = systemModel.SystemAudioVolume;
+        audioSource.clip = audioDataBase.PromptKnockAudio;
         audioSource.Play();
-
         Debug.Log("ノック促し音声再生");
 
-        yield return null;
-        StartCoroutine(PlayPromptKnockAudio());
+        StartCoroutine(PromptKnockAudioPlayer());
     }
     
 }

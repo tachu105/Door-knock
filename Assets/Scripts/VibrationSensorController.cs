@@ -6,25 +6,26 @@ using UnityEngine;
 /// </summary>
 public class VibrationSensorController : MonoBehaviour
 {
-    private SystemModel systemModel;
+    [SerializeField] private SystemModel systemModel;
+
     private Coroutine resetCountTimer;
+    private WaitUntil waitUntil_SensorStateChanged;
+
+    private bool newSensorState;
 
     private void Start()
     {
         systemModel = GetComponent<SystemModel>();
+        waitUntil_SensorStateChanged = new WaitUntil(() => systemModel.CheckVibrationSensorChange(out newSensorState));
+
         StartCoroutine(CountKnock());
     }
-
 
     /// <summary>
     /// ノックの検知を行う
     /// </summary>
-    /// <returns></returns>
     IEnumerator CountKnock()
     {
-        bool currentState;
-
-
         // システムのフェーズがWaitKnockでない場合は再起
         if (systemModel.currentPhase != SystemModel.SystemPhase.WaitKnock)
         {
@@ -33,30 +34,25 @@ public class VibrationSensorController : MonoBehaviour
             yield break;
         }
 
-        // 振動センサの値の変化を監視
-        while(true)
-        {
-            if (systemModel.CheckVibrationSensorChange(out currentState)) break;
-            yield return null;
-        }
-
-        if(currentState)
+        // 振動センサの状態を監視
+        yield return waitUntil_SensorStateChanged;
+        if(newSensorState)
         {
             systemModel.knockCount++;
             Debug.Log("ノック回数："+systemModel.knockCount);
+
             // 一定時間経過後にノックカウントをリセットする機能を更新
             if (resetCountTimer != null) StopCoroutine(resetCountTimer);
-            resetCountTimer = StartCoroutine(ResetKnockCountTimer(systemModel.knockResetTime));
+            resetCountTimer = StartCoroutine(ResetKnockCountTimer(systemModel.RepeatedKnockInterval));
 
             // 指定回数ノックされた場合は次のフェーズに移行
-            if(systemModel.knockCount >= systemModel.knockThreshold)
+            if(systemModel.knockCount >= systemModel.KnockThreshold)
             {
-                systemModel.ChangeNextSystemPhase();    // 次のフェーズに移行
+                systemModel.ChangeNextSystemPhase();
                 systemModel.knockCount = 0;
             }
         }
 
-        yield return null;
         StartCoroutine(CountKnock());
     }
 
@@ -65,12 +61,9 @@ public class VibrationSensorController : MonoBehaviour
     /// 指定時間以内にノックがない場合にノックカウントをリセットする
     /// </summary>
     /// <param name="waitTime">リセット時間</param>
-    /// <returns></returns>
     IEnumerator ResetKnockCountTimer(float waitTime)
     {
         yield return new WaitForSeconds(waitTime);
         systemModel.knockCount = 0;
     }
-
-
 }
